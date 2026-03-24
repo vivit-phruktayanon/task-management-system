@@ -1,23 +1,25 @@
-async function getTasks() {
-  const res = await fetch("http://127.0.0.1:8000/api/tasks", {
-    cache: "no-store"
-  })
+"use client"
 
-  return res.json()
-}
+import { useState } from "react"
 
-export default async function TasksPage() {
-  const tasks = await getTasks()
+export default function TasksPage() {
+  const [title,setTitle] = useState("")
 
   return (
     <div>
+
       <h1>Task List</h1>
 
-      <ul>
-        {tasks.map((task: any) => (
-          <li key={task.id}>{task.title}</li>
-        ))}
-      </ul>
+      <form>
+        <input
+          value={title}
+          onChange={(e)=>setTitle(e.target.value)}
+          placeholder="Task title"
+        />
+
+        <button type="submit">Add Task</button>
+      </form>
+
     </div>
   )
 }
