@@ -3,23 +3,37 @@
 import { useState } from "react"
 
 export default function TasksPage() {
-  const [title,setTitle] = useState("")
+    const [title, setTitle] = useState("")
 
-  return (
-    <div>
+    async function createTask(e: any) {
+        e.preventDefault()
 
-      <h1>Task List</h1>
+        await fetch("http://127.0.0.1:8000/api/tasks", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                title: title
+            })
+        })
+    }
 
-      <form>
-        <input
-          value={title}
-          onChange={(e)=>setTitle(e.target.value)}
-          placeholder="Task title"
-        />
+    return (
+        <div>
 
-        <button type="submit">Add Task</button>
-      </form>
+            <h1>Task List</h1>
 
-    </div>
-  )
+            <form onSubmit={createTask}>
+                <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Task title"
+                />
+
+                <button type="submit">Add Task</button>
+            </form>
+
+        </div>
+    )
 }
