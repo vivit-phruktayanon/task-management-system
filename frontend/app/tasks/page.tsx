@@ -3,6 +3,8 @@
 import { useState } from "react"
 
 export default function TasksPage() {
+
+    const [tasks,setTasks] = useState<any[]>([])
     const [title, setTitle] = useState("")
 
     async function createTask(e: any) {
@@ -35,6 +37,17 @@ export default function TasksPage() {
                 <button type="submit">Add Task</button>
             </form>
 
+            {tasks.map((task: any) => (
+                <div key={task.id}>
+
+                    <span>{task.title}</span>
+
+                    <button onClick={() => deleteTask(task.id)}>
+                        Delete
+                    </button>
+
+                </div>
+            ))}
         </div>
     )
 }
