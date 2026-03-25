@@ -1,12 +1,23 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function TasksPage() {
 
-    const [tasks,setTasks] = useState<any[]>([])
+    const [tasks, setTasks] = useState<any[]>([])
     const [title, setTitle] = useState("")
 
+
+
+    useEffect(() => {
+        fetchTasks()
+    }, [])
+
+    async function fetchTasks() {
+        const res = await fetch("http://127.0.0.1:8000/api/tasks")
+        const data = await res.json()
+        setTasks(data)
+    }
     async function createTask(e: any) {
         e.preventDefault()
 
@@ -20,6 +31,20 @@ export default function TasksPage() {
                 title: title
             })
         })
+        setTitle("")
+        fetchTasks()
+    }
+
+
+    async function deleteTask(id: number) {
+        await fetch(`http://127.0.0.1:8000/api/tasks/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Accept": "application/json"
+            }
+        })
+
+        fetchTasks()
     }
 
     return (
