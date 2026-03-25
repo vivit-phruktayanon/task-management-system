@@ -11,7 +11,8 @@ export default function TasksPage() {
         await fetch("http://127.0.0.1:8000/api/tasks", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Accept": "application/json"
             },
             body: JSON.stringify({
                 title: title
