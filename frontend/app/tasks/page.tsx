@@ -11,6 +11,7 @@ export default function TasksPage() {
     const todoTasks = tasks.filter((t: any) => t.status === "todo")
     const doingTasks = tasks.filter((t: any) => t.status === "doing")
     const doneTasks = tasks.filter((t: any) => t.status === "done")
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         fetchTasks()
@@ -24,18 +25,30 @@ export default function TasksPage() {
     async function createTask(e: any) {
         e.preventDefault()
 
-        await fetch("http://127.0.0.1:8000/api/tasks", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({
-                title: title
+        try {
+            setLoading(true)
+
+            await fetch("http://127.0.0.1:8000/api/tasks", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    title: title
+                })
             })
-        })
-        setTitle("")
-        fetchTasks()
+
+            setTitle("")
+            fetchTasks()
+
+        } catch (err) {
+            console.error(err)
+            alert("Create failed")
+
+        } finally {
+            setLoading(false)
+        }
     }
 
     function startEdit(task: any) {
@@ -63,14 +76,25 @@ export default function TasksPage() {
 
     }
     async function deleteTask(id: number) {
-        await fetch(`http://127.0.0.1:8000/api/tasks/${id}`, {
-            method: "DELETE",
-            headers: {
-                "Accept": "application/json"
-            }
-        })
 
-        fetchTasks()
+        try {
+            setLoading(true)
+
+            await fetch(`http://127.0.0.1:8000/api/tasks/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Accept": "application/json"
+                }
+            })
+
+            fetchTasks()
+
+        } catch (err) {
+            alert("Delete failed")
+
+        } finally {
+            setLoading(false)
+        }
     }
 
     async function toggleStatus(task: any) {
@@ -98,69 +122,88 @@ export default function TasksPage() {
     }
 
     async function moveToNext(task: any) {
-        await fetch(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({ status: nextStatus(task.status) })
-        })
-        fetchTasks()
+
+        try {
+            setLoading(true)
+
+            const nextStatus =
+                task.status === "todo" ? "doing" :
+                    task.status === "doing" ? "done" : "todo"
+
+            await fetch(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    status: nextStatus
+                })
+            })
+
+            fetchTasks()
+
+        } finally {
+            setLoading(false)
+        }
     }
 
     function TaskCard({ task }: any) {
         return (
             <div style={{
                 background: "#1e293b",
-                padding: "12px",
+                padding: "16px",
                 borderRadius: "8px",
-                marginBottom: "10px",
+                marginBottom: "16px",
                 boxShadow: "0 2px 4px rgba(0,0,0,0.3)"
             }}>
                 <div>{task.title}</div>
 
                 <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
 
-                    <button onClick={() => moveToNext(task)}>➡️</button>
+                    <button disabled={loading} onClick={() => moveToNext(task)}>➡️</button>
 
-                    <button onClick={() => startEdit(task)}>✏️</button>
+                    <button disabled={loading} onClick={() => startEdit(task)}>✏️</button>
 
-                    <button onClick={() => deleteTask(task.id)}>🗑️</button>
+                    <button disabled={loading} onClick={() => deleteTask(task.id)}>🗑️</button>
 
                 </div>
-                
+
             </div>
         )
     }
 
     return (
         <div>
-            <form onSubmit={createTask}>
-                <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Task title"
-                />
 
-                <button type="submit">Add Task</button>
-            </form>
-            {editingTask && (
+            {editingTask ? (
 
-                    <form onSubmit={updateTask}>
+                <form onSubmit={updateTask}>
 
-                        <input
-                            value={editTitle}
-                            onChange={(e) => setEditTitle(e.target.value)}
-                        />
+                    <input
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                    />
 
-                        <button type="submit">
-                            Update
-                        </button>
+                    <button type="submit">
+                        Update
+                    </button>
 
-                    </form>
+                </form>
 
-                )}
+            ) : (
+                <form onSubmit={createTask}>
+                    <input
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Task title"
+                    />
+
+                    <button disabled={loading}>
+                        {loading ? "Loading..." : "Add Task"}
+                    </button>
+                </form>
+            )}
             <div style={{
                 display: "flex",
                 gap: "20px",
@@ -176,6 +219,9 @@ export default function TasksPage() {
                     minHeight: "300px"
                 }}>
                     <h3>Todo</h3>
+                    {todoTasks.length === 0 && (
+                        <p style={{ opacity: 0.5 }}>No tasks</p>
+                    )}
                     {todoTasks.map((t: any) => <TaskCard key={t.id} task={t} />)}
                 </div>
 
@@ -188,6 +234,10 @@ export default function TasksPage() {
                     minHeight: "300px"
                 }}>
                     <h3>Doing</h3>
+
+                    {doingTasks.length === 0 && (
+                        <p style={{ opacity: 0.5 }}>No tasks</p>
+                    )}
                     {doingTasks.map((t: any) => <TaskCard key={t.id} task={t} />)}
                 </div>
 
@@ -200,6 +250,9 @@ export default function TasksPage() {
                     minHeight: "300px"
                 }}>
                     <h3>Done</h3>
+                    {doneTasks.length === 0 && (
+                        <p style={{ opacity: 0.5 }}>No tasks</p>
+                    )}
                     {doneTasks.map((t: any) => <TaskCard key={t.id} task={t} />)}
                 </div>
 
