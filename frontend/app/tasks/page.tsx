@@ -71,6 +71,26 @@ export default function TasksPage() {
         fetchTasks()
     }
 
+    async function toggleStatus(task: any) {
+
+        const nextStatus =
+            task.status === "todo" ? "doing" :
+                task.status === "doing" ? "done" : "todo"
+
+        await fetch(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                status: nextStatus
+            })
+        })
+
+        fetchTasks()
+    }
+
     return (
         <div>
 
@@ -90,7 +110,7 @@ export default function TasksPage() {
                 <div key={task.id}>
 
                     <span>{task.title}</span>
-
+                    <span>{task.status}</span>
                     <button onClick={() => startEdit(task)}>
                         Edit
                     </button>
@@ -98,7 +118,9 @@ export default function TasksPage() {
                     <button onClick={() => deleteTask(task.id)}>
                         Delete
                     </button>
-
+                    <button onClick={() => toggleStatus(task)}>
+                        {task.status}
+                    </button>
                 </div>
             ))}
             {editingTask && (
