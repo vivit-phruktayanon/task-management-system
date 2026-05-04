@@ -6,7 +6,8 @@ export default function TasksPage() {
 
     const [tasks, setTasks] = useState<any[]>([])
     const [title, setTitle] = useState("")
-
+    const [editingTask, setEditingTask] = useState<any>(null)
+    const [editTitle, setEditTitle] = useState("")
 
 
     useEffect(() => {
@@ -35,7 +36,30 @@ export default function TasksPage() {
         fetchTasks()
     }
 
+    function startEdit(task: any) {
+        setEditingTask(task)
+        setEditTitle(task.title)
+    }
 
+    async function updateTask(e: any) {
+
+        e.preventDefault()
+
+        await fetch(`http://127.0.0.1:8000/api/tasks/${editingTask.id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                title: editTitle
+            })
+        })
+
+        setEditingTask(null)
+        fetchTasks()
+
+    }
     async function deleteTask(id: number) {
         await fetch(`http://127.0.0.1:8000/api/tasks/${id}`, {
             method: "DELETE",
@@ -67,12 +91,32 @@ export default function TasksPage() {
 
                     <span>{task.title}</span>
 
+                    <button onClick={() => startEdit(task)}>
+                        Edit
+                    </button>
+
                     <button onClick={() => deleteTask(task.id)}>
                         Delete
                     </button>
 
                 </div>
             ))}
+            {editingTask && (
+
+                <form onSubmit={updateTask}>
+
+                    <input
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                    />
+
+                    <button type="submit">
+                        Update
+                    </button>
+
+                </form>
+
+            )}
         </div>
     )
 }
