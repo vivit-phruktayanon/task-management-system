@@ -146,7 +146,22 @@ export default function TasksPage() {
 
     return (
         <div>
-
+            {loading && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(0,0,0,0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#fff"
+                }}>
+                    Loading...
+                </div>
+            )}
             {editingTask ? (
 
                 <form onSubmit={updateTask}>
