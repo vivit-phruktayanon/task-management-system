@@ -8,6 +8,7 @@ import {
     updateTaskApi,
     Task
 } from "@/services/taskService"
+import toast from "react-hot-toast"
 
 export default function TasksPage() {
 
@@ -38,13 +39,19 @@ export default function TasksPage() {
 
     async function createTask(e: any) {
         e.preventDefault()
+
         try {
             setLoading(true)
+
             await createTaskApi(title)
+
+            toast.success("Task created")
             setTitle("")
             await fetchTasks()
+
         } catch (e: any) {
-            alert(e.message)
+            toast.error(e.message || "Create failed")
+
         } finally {
             setLoading(false)
         }
@@ -65,36 +72,48 @@ export default function TasksPage() {
                 title: editTitle
             })
 
+            toast.success("Task updated")
             setEditingTask(null)
             await fetchTasks()
 
-        } catch (err: any) {
-            console.error(err)
-            alert(err.message || "Update failed")
+        } catch (e: any) {
+            toast.error("Update failed")
 
         } finally {
             setLoading(false)
         }
     }
+
     async function deleteTask(id: number) {
         try {
             setLoading(true)
+
             await deleteTaskApi(id)
+
+            toast.success("Task deleted")
             await fetchTasks()
+
+        } catch (e: any) {
+            toast.error("Delete failed")
+
         } finally {
             setLoading(false)
         }
     }
 
-    async function moveToNext(task: Task) {
-        const next =
-            task.status === "todo" ? "doing" :
-                task.status === "doing" ? "done" : "todo"
-
+    async function moveToNext(task: any) {
         try {
             setLoading(true)
+
+            const next =
+                task.status === "todo" ? "doing" :
+                    task.status === "doing" ? "done" : "todo"
+
             await updateTaskApi(task.id, { status: next })
+
+            toast.success("Status updated")
             await fetchTasks()
+
         } finally {
             setLoading(false)
         }
@@ -152,7 +171,7 @@ export default function TasksPage() {
                     />
 
                     <button disabled={loading}>
-                        {loading ? "Loading..." : "Add Task"}
+                        {loading ? "Saving..." : "Add Task"}
                     </button>
                 </form>
             )}
