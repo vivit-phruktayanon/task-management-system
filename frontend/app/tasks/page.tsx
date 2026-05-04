@@ -8,7 +8,9 @@ export default function TasksPage() {
     const [title, setTitle] = useState("")
     const [editingTask, setEditingTask] = useState<any>(null)
     const [editTitle, setEditTitle] = useState("")
-
+    const todoTasks = tasks.filter((t: any) => t.status === "todo")
+    const doingTasks = tasks.filter((t: any) => t.status === "doing")
+    const doneTasks = tasks.filter((t: any) => t.status === "done")
 
     useEffect(() => {
         fetchTasks()
@@ -91,11 +93,49 @@ export default function TasksPage() {
         fetchTasks()
     }
 
+    function nextStatus(s: string) {
+        return s === "todo" ? "doing" : s === "doing" ? "done" : "todo"
+    }
+
+    async function moveToNext(task: any) {
+        await fetch(`http://127.0.0.1:8000/api/tasks/${task.id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ status: nextStatus(task.status) })
+        })
+        fetchTasks()
+    }
+
+    function TaskCard({ task }: any) {
+        return (
+            <div style={{
+                background: "#1e293b",
+                padding: "12px",
+                borderRadius: "8px",
+                marginBottom: "10px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.3)"
+            }}>
+                <div>{task.title}</div>
+
+                <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+
+                    <button onClick={() => moveToNext(task)}>➡️</button>
+
+                    <button onClick={() => startEdit(task)}>✏️</button>
+
+                    <button onClick={() => deleteTask(task.id)}>🗑️</button>
+
+                </div>
+                
+            </div>
+        )
+    }
+
     return (
         <div>
-
-            <h1>Task List</h1>
-
             <form onSubmit={createTask}>
                 <input
                     value={title}
@@ -105,40 +145,65 @@ export default function TasksPage() {
 
                 <button type="submit">Add Task</button>
             </form>
-
-            {tasks.map((task: any) => (
-                <div key={task.id}>
-
-                    <span>{task.title}</span>
-                    <span>{task.status}</span>
-                    <button onClick={() => startEdit(task)}>
-                        Edit
-                    </button>
-
-                    <button onClick={() => deleteTask(task.id)}>
-                        Delete
-                    </button>
-                    <button onClick={() => toggleStatus(task)}>
-                        {task.status}
-                    </button>
-                </div>
-            ))}
             {editingTask && (
 
-                <form onSubmit={updateTask}>
+                    <form onSubmit={updateTask}>
 
-                    <input
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                    />
+                        <input
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                        />
 
-                    <button type="submit">
-                        Update
-                    </button>
+                        <button type="submit">
+                            Update
+                        </button>
 
-                </form>
+                    </form>
 
-            )}
+                )}
+            <div style={{
+                display: "flex",
+                gap: "20px",
+                marginTop: "20px",
+                alignItems: "flex-start"
+            }}>
+                {/* TODO */}
+                <div style={{
+                    flex: 1,
+                    background: "#0f172a",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    minHeight: "300px"
+                }}>
+                    <h3>Todo</h3>
+                    {todoTasks.map((t: any) => <TaskCard key={t.id} task={t} />)}
+                </div>
+
+                {/* DOING */}
+                <div style={{
+                    flex: 1,
+                    background: "#0f172a",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    minHeight: "300px"
+                }}>
+                    <h3>Doing</h3>
+                    {doingTasks.map((t: any) => <TaskCard key={t.id} task={t} />)}
+                </div>
+
+                {/* DONE */}
+                <div style={{
+                    flex: 1,
+                    background: "#0f172a",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    minHeight: "300px"
+                }}>
+                    <h3>Done</h3>
+                    {doneTasks.map((t: any) => <TaskCard key={t.id} task={t} />)}
+                </div>
+
+            </div>
         </div>
     )
 }
